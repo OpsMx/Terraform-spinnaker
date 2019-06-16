@@ -1,1 +1,0 @@
-module "main"{source = "git::https://github.com/lalitv92/terraformtest2.git"}

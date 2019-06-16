@@ -1,1 +1,0 @@
-module "infra"{source = "git::https://github.com/lalitv92/terraformtest.git"}
