@@ -1,7 +1,7 @@
 # TerraSpin
 
 A microservice to integrate with Spinnaker for planning, applying and destroying Terraform plans
-
+[TerraSpin Docs](https://docs.opsmx.com/codelabs/terraform-spinnaker) 
 ## How to Build and Run
 clone this repository and go inside TerraSpin directory run this command
 
