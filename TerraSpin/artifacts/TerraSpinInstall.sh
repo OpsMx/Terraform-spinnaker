@@ -4,7 +4,7 @@ UserPort=$1
 DefaultPort=8090
 CurrentDir="$(pwd)"
 
-echo current dirtory :: $CurrentDir
+echo current directory :: $CurrentDir
 echo user port :: $UserPort
 echo default port :: $DefaultPort
 
