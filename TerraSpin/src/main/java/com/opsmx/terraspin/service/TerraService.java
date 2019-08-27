@@ -103,7 +103,7 @@ public class TerraService {
 			Map.Entry<String, JSONObject> entry = (Map.Entry<String, JSONObject>) it.next(); // current entry in a loop
 			String providerName = (String) entry.getKey();
 			JSONObject providerObj = (JSONObject) entry.getValue();
-			String fullPathOfProviderImplClass = "com.opsmx.terraApp.interfaces.Provider" + providerName + "Impl";
+			String fullPathOfProviderImplClass = "com.opsmx.terraspin.interfaces.Provider" + providerName + "Impl";
 
 			try {
 
@@ -181,7 +181,7 @@ public class TerraService {
 			log.info("Error : parse plan out put");
 			throw new RuntimeException("parse plan output error ",e);
 		}
-		String strToR = DEMO_HTML.replaceAll("OPTION_SCPACE", statusStr);
+		String strToR = DEMO_HTML.replace("OPTION_SCPACE", statusStr);
 		log.debug("terraform plan out put :"+strToR);
 		return strToR;
 	}
@@ -383,7 +383,7 @@ public class TerraService {
 	public String destroyOutput(String applicationName, String pipelineName, String pipelineId, String baseURL) {
 
 		String currentSatusDir = userHomeDir + "/.opsmx/spinnaker/" + applicationName + "/" + pipelineName + "/"
-				+ pipelineId + "/deleteStatus";
+				+ pipelineId + "/destroyStatus";
 
 		JSONObject jsonObj = new JSONObject();
 		String statusStr = null;

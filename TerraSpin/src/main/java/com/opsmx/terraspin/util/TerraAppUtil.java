@@ -25,16 +25,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -43,18 +39,18 @@ import org.springframework.stereotype.Component;
 public class TerraAppUtil {
 
 	private static final Logger log = LoggerFactory.getLogger(TerraAppUtil.class);
-	
+
 	static final String separator = File.separator;
-	
+
 	public File createDirForPipelineId(String applicaton, String pipeline, String pipelineId) {
 
 		String ApplicationName = applicaton;
 		String PipelineName = pipeline;
 		String PipelineId = pipelineId;
-		
+
 		String currentUserDir = System.getProperty("user.home");
-		String opsmxdir = currentUserDir +separator+ ".opsmx";
-		log.debug(" opsmx directror :"+opsmxdir);
+		String opsmxdir = currentUserDir + separator + ".opsmx";
+		log.debug(" opsmx directror :" + opsmxdir);
 		File opsmxDirFile = new File(opsmxdir);
 		if (!opsmxDirFile.exists())
 			opsmxDirFile.mkdir();
@@ -67,15 +63,15 @@ public class TerraAppUtil {
 		if (!applicationDirFile.exists())
 			applicationDirFile.mkdir();
 
-		File pipelineNameDirFile = new File(applicationDirFile.getPath() + separator+ PipelineName);
+		File pipelineNameDirFile = new File(applicationDirFile.getPath() + separator + PipelineName);
 		if (!pipelineNameDirFile.exists())
 			pipelineNameDirFile.mkdir();
 
 		File pipelineIdDirFile = new File(pipelineNameDirFile.getPath() + separator + PipelineId);
 		if (!pipelineIdDirFile.exists())
-			pipelineIdDirFile.mkdir();		
-		log.debug(" Succesfully created the pipeline directory :"+pipelineIdDirFile.getPath());
-	    return pipelineIdDirFile;
+			pipelineIdDirFile.mkdir();
+		log.debug(" Succesfully created the pipeline directory :" + pipelineIdDirFile.getPath());
+		return pipelineIdDirFile;
 	}
 
 	public String getDirPathOfPipelineId(String applicaton, String pipeline, String pipelineId) {
@@ -84,9 +80,9 @@ public class TerraAppUtil {
 		String PipelineName = "pipelineName-" + pipeline;
 		String PipelineIdName = "pipelineId-" + pipelineId;
 		String currentUserDir = System.getProperty("user.home");
-		String pipelineIdDir = currentUserDir +separator+".opsmx"+separator+"spinnaker"+separator + ApplicationName + separator + PipelineName + separator
-				+ PipelineIdName;
-		log.debug(" pipeline directory :"+pipelineIdDir);
+		String pipelineIdDir = currentUserDir + separator + ".opsmx" + separator + "spinnaker" + separator
+				+ ApplicationName + separator + PipelineName + separator + PipelineIdName;
+		log.debug(" pipeline directory :" + pipelineIdDir);
 		return pipelineIdDir;
 	}
 
@@ -112,13 +108,13 @@ public class TerraAppUtil {
 
 			in.close();
 			pw.close();
-          log.info("completed writing in to file :"+file.getPath());
+			log.info("completed writing in to file :" + file.getPath());
 		} catch (Exception e) {
 			log.info("Error : resource stream writing ");
-			throw new RuntimeException("Error : resource stream writing ",e);
+			throw new RuntimeException("Error : resource stream writing ", e);
 		}
 	}
-	
+
 	public void overWriteStreamOnFile(File file, InputStream stream) {
 
 		boolean append = false;
@@ -140,14 +136,15 @@ public class TerraAppUtil {
 			}
 			in.close();
 			pw.close();
-			
-			log.info("completed writing in to file :"+file.getPath());
+
+			log.info("completed writing in to file :" + file.getPath());
 		} catch (Exception e) {
 			log.info("Error : resource stream over writing ");
 			throw new RuntimeException("Error : resource stream over writing ", e);
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public Map<String, JSONObject> findProviderObj(JSONObject halConfigObject, String spincloudAccount) {
 
 		log.info("In TerraAppUtil find provider object method :::: \n");
@@ -166,7 +163,7 @@ public class TerraAppUtil {
 		JSONObject actualCloudProviderObj = null;
 
 		JSONObject cloudProviders = (JSONObject) halConfigObject.get("providers");
-		log.debug("Configured cloud providers : "+cloudProviders.toJSONString());
+		log.debug("Configured cloud providers : " + cloudProviders.toJSONString());
 		for (int i = 0; i < providerList.size(); i++) {
 
 			boolean isFound = false;
@@ -195,159 +192,18 @@ public class TerraAppUtil {
 			}
 
 			if (isFound) {
+				if (StringUtils.equalsIgnoreCase(providerName.trim(), "aws")) {
+					actualCloudProviderObj.put("accessKeyId", currentProvider.get("accessKeyId"));
+					actualCloudProviderObj.put("secretAccessKey", currentProvider.get("secretAccessKey"));
+				}
 				rootMapObj.put(providerName, actualCloudProviderObj);
 				break;
 			}
-			
+
 		}
-		log.info("actual cloud provider : "+rootMapObj);
+		log.info("actual cloud provider : " + rootMapObj);
 		return rootMapObj;
 	}
 
-	public static void main(String... args) {
-		 TerraAppUtil tu = new TerraAppUtil();
-		// tu.createDirForPipelineId("test", "depl2oy", "excg4587ut");
-		// System.out.println("Properties " + System.getProperties().toString());
-		// System.out.println(tu.createDirForPipelineId("test", "deploy",
-		// "excg4587ut"));
-
-		String test = "{\n" + "  \"providers\": {\n" + "    \"appengine\": {\n" + "      \"accounts\": [],\n"
-				+ "      \"enabled\": false\n" + "    },\n" + "    \"kubernetes\": {\n" + "      \"accounts\": [\n"
-				+ "        {\n" + "          \"providerVersion\": \"V2\",\n" + "          \"omitKinds\": [\n"
-				+ "            \"podPreset\"\n" + "          ],\n" + "          \"omitNamespaces\": [],\n"
-				+ "          \"kinds\": [],\n" + "          \"customResources\": [],\n"
-				+ "          \"oauthScopes\": [],\n" + "          \"dockerRegistries\": [],\n"
-				+ "          \"checkPermissionsOnStartup\": false,\n" + "          \"liveManifestCalls\": true,\n"
-				+ "          \"kubeconfigFile\": \"/home/opsmxgcetest/.kube/config\",\n"
-				+ "          \"onlySpinnakerManaged\": false,\n" + "          \"permissions\": {},\n"
-				+ "          \"name\": \"openshift1-account\",\n"
-				+ "          \"context\": \"default/35-237-183-196:8443/CN=sagnik,CN=Users,DC=local,DC=opsmx,DC=com\",\n"
-				+ "          \"configureImagePullSecrets\": true,\n" + "          \"cacheThreads\": 1,\n"
-				+ "          \"oAuthScopes\": [],\n" + "          \"cachingPolicies\": [],\n"
-				+ "          \"requiredGroupMembership\": [],\n" + "          \"namespaces\": [\n"
-				+ "            \"default\",\n" + "            \"arihant\"\n" + "          ]\n" + "        },\n"
-				+ "        {\n" + "          \"providerVersion\": \"V1\",\n" + "          \"omitKinds\": [],\n"
-				+ "          \"omitNamespaces\": [],\n" + "          \"kinds\": [],\n"
-				+ "          \"customResources\": [],\n" + "          \"oauthScopes\": [],\n"
-				+ "          \"dockerRegistries\": [\n" + "            {\n"
-				+ "              \"accountName\": \"my-docker-registry\",\n" + "              \"namespaces\": []\n"
-				+ "            }\n" + "          ],\n"
-				+ "          \"kubeconfigFile\": \"/home/opsmxgcetest/.kube/config\",\n"
-				+ "          \"onlySpinnakerManaged\": false,\n" + "          \"permissions\": {},\n"
-				+ "          \"name\": \"my-k8s-account\",\n" + "          \"configureImagePullSecrets\": true,\n"
-				+ "          \"cacheThreads\": 1,\n" + "          \"oAuthScopes\": [],\n"
-				+ "          \"cachingPolicies\": [],\n" + "          \"requiredGroupMembership\": [],\n"
-				+ "          \"namespaces\": []\n" + "        },\n" + "        {\n"
-				+ "          \"providerVersion\": \"V2\",\n" + "          \"omitKinds\": [],\n"
-				+ "          \"omitNamespaces\": [],\n" + "          \"kinds\": [],\n"
-				+ "          \"customResources\": [],\n" + "          \"oauthScopes\": [],\n"
-				+ "          \"dockerRegistries\": [],\n"
-				+ "          \"kubeconfigFile\": \"/home/opsmxgcetest/.kube/config\",\n"
-				+ "          \"onlySpinnakerManaged\": false,\n" + "          \"permissions\": {},\n"
-				+ "          \"name\": \"my-k8s-v2-account\",\n"
-				+ "          \"context\": \"gke_my-orbit-project-71824_us-central1-a_gke-standard-cluster\",\n"
-				+ "          \"configureImagePullSecrets\": true,\n" + "          \"cacheThreads\": 1,\n"
-				+ "          \"oAuthScopes\": [],\n" + "          \"cachingPolicies\": [],\n"
-				+ "          \"requiredGroupMembership\": [],\n" + "          \"namespaces\": []\n" + "        },\n"
-				+ "        {\n" + "          \"providerVersion\": \"V2\",\n" + "          \"omitKinds\": [],\n"
-				+ "          \"omitNamespaces\": [],\n" + "          \"kinds\": [],\n"
-				+ "          \"customResources\": [],\n" + "          \"oauthScopes\": [],\n"
-				+ "          \"dockerRegistries\": [],\n"
-				+ "          \"kubeconfigFile\": \"/home/opsmxgcetest/.kube/devk8slocal\",\n"
-				+ "          \"onlySpinnakerManaged\": false,\n" + "          \"permissions\": {},\n"
-				+ "          \"name\": \"devk8s-v2local\",\n" + "          \"configureImagePullSecrets\": true,\n"
-				+ "          \"cacheThreads\": 1,\n" + "          \"oAuthScopes\": [],\n"
-				+ "          \"cachingPolicies\": [],\n" + "          \"requiredGroupMembership\": [],\n"
-				+ "          \"namespaces\": []\n" + "        },\n" + "        {\n"
-				+ "          \"providerVersion\": \"V2\",\n" + "          \"omitKinds\": [],\n"
-				+ "          \"omitNamespaces\": [],\n" + "          \"kinds\": [],\n"
-				+ "          \"customResources\": [],\n" + "          \"oauthScopes\": [],\n"
-				+ "          \"dockerRegistries\": [],\n"
-				+ "          \"kubeconfigFile\": \"/home/opsmxgcetest/.kube/eksconfig\",\n"
-				+ "          \"onlySpinnakerManaged\": false,\n" + "          \"permissions\": {},\n"
-				+ "          \"name\": \"spin-v2-ekscluster\",\n" + "          \"context\": \"aws\",\n"
-				+ "          \"configureImagePullSecrets\": true,\n" + "          \"cacheThreads\": 1,\n"
-				+ "          \"oAuthScopes\": [],\n" + "          \"cachingPolicies\": [],\n"
-				+ "          \"requiredGroupMembership\": [],\n" + "          \"namespaces\": []\n" + "        }\n"
-				+ "      ],\n" + "      \"enabled\": true,\n" + "      \"primaryAccount\": \"openshift1-account\"\n"
-				+ "    },\n" + "    \"oracle\": {\n" + "      \"bakeryDefaults\": {\n"
-				+ "        \"templateFile\": \"oci.json\",\n" + "        \"baseImages\": []\n" + "      },\n"
-				+ "      \"accounts\": [],\n" + "      \"enabled\": false\n" + "    },\n" + "    \"ecs\": {\n"
-				+ "      \"accounts\": [\n" + "        {\n" + "          \"providerVersion\": \"V1\",\n"
-				+ "          \"permissions\": {},\n" + "          \"awsAccount\": \"ec2account\",\n"
-				+ "          \"name\": \"ecs-spinnaker\",\n" + "          \"requiredGroupMembership\": []\n"
-				+ "        }\n" + "      ],\n" + "      \"enabled\": false,\n"
-				+ "      \"primaryAccount\": \"ecs-spinnaker\"\n" + "    },\n" + "    \"dockerRegistry\": {\n"
-				+ "      \"accounts\": [\n" + "        {\n" + "          \"providerVersion\": \"V1\",\n"
-				+ "          \"address\": \"https://index.docker.io\",\n" + "          \"trackDigests\": false,\n"
-				+ "          \"insecureRegistry\": false,\n" + "          \"cacheIntervalSeconds\": 30,\n"
-				+ "          \"password\": \"Networks123!\",\n" + "          \"repositories\": [\n"
-				+ "            \"opsmx11/restapp\"\n" + "          ],\n" + "          \"permissions\": {},\n"
-				+ "          \"clientTimeoutMillis\": 60000,\n" + "          \"name\": \"my-docker-registry\",\n"
-				+ "          \"sortTagsByDate\": false,\n" + "          \"cacheThreads\": 1,\n"
-				+ "          \"paginateSize\": 100,\n" + "          \"requiredGroupMembership\": [],\n"
-				+ "          \"email\": \"fake.email@spinnaker.io\",\n" + "          \"username\": \"opsmx11\"\n"
-				+ "        }\n" + "      ],\n" + "      \"enabled\": true,\n"
-				+ "      \"primaryAccount\": \"my-docker-registry\"\n" + "    },\n" + "    \"cloudfoundry\": {\n"
-				+ "      \"accounts\": [],\n" + "      \"enabled\": false\n" + "    },\n" + "    \"google\": {\n"
-				+ "      \"bakeryDefaults\": {\n" + "        \"zone\": \"us-central1-f\",\n"
-				+ "        \"templateFile\": \"gce.json\",\n" + "        \"baseImages\": [],\n"
-				+ "        \"network\": \"default\",\n" + "        \"useInternalIp\": false\n" + "      },\n"
-				+ "      \"accounts\": [],\n" + "      \"enabled\": false\n" + "    },\n" + "    \"aws\": {\n"
-				+ "      \"accessKeyId\": \"AKIAI7WBDEUL2R4EVNFA\",\n"
-				+ "      \"secretAccessKey\": \"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\",\n"
-				+ "      \"defaults\": {\n" + "        \"iamRole\": \"BaseIAMRole\"\n" + "      },\n"
-				+ "      \"bakeryDefaults\": {\n" + "        \"baseImages\": []\n" + "      },\n"
-				+ "      \"accounts\": [\n" + "        {\n" + "          \"accountId\": \"732813442182\",\n"
-				+ "          \"providerVersion\": \"V1\",\n" + "          \"regions\": [],\n"
-				+ "          \"permissions\": {},\n" + "          \"name\": \"my-aws-ec2-account\",\n"
-				+ "          \"assumeRole\": \"role/spinnakerManaged\",\n"
-				+ "          \"requiredGroupMembership\": []\n" + "        },\n" + "        {\n"
-				+ "          \"accountId\": \"732813442182\",\n" + "          \"providerVersion\": \"V1\",\n"
-				+ "          \"regions\": [],\n" + "          \"permissions\": {},\n"
-				+ "          \"name\": \"ec2account\",\n" + "          \"assumeRole\": \"role/spinnakerManaged\",\n"
-				+ "          \"requiredGroupMembership\": []\n" + "        }\n" + "      ],\n"
-				+ "      \"defaultKeyPairTemplate\": \"{{name}}-keypair\",\n" + "      \"enabled\": false,\n"
-				+ "      \"primaryAccount\": \"my-aws-ec2-account\",\n" + "      \"defaultRegions\": [\n"
-				+ "        {\n" + "          \"name\": \"us-west-2\"\n" + "        },\n" + "        {\n"
-				+ "          \"name\": \"us-east-1\"\n" + "        }\n" + "      ]\n" + "    },\n" + "    \"dcos\": {\n"
-				+ "      \"accounts\": [],\n" + "      \"enabled\": false,\n" + "      \"clusters\": []\n" + "    },\n"
-				+ "    \"azure\": {\n" + "      \"bakeryDefaults\": {\n"
-				+ "        \"templateFile\": \"azure-linux.json\",\n" + "        \"baseImages\": []\n" + "      },\n"
-				+ "      \"accounts\": [],\n" + "      \"enabled\": false\n" + "    }\n" + "  }\n" + "}";
-		
-		
-		
-		JSONParser parser = new JSONParser();
-		JSONObject cloudProviders1 = null;
-		try {
-			cloudProviders1 = (JSONObject) parser.parse(test);
-
-		} catch (ParseException e1) {
-			System.out.println("Exception while parsing halconfig object");
-			e1.printStackTrace();
-		}
-
-		System.out.println(tu.findProviderObj(cloudProviders1, "devk8s-v2local"));
-		
-		Map<String, JSONObject> currentCloudProviderObj = tu.findProviderObj(cloudProviders1, "devk8s-v2local");
-		
-		
-		Iterator<Entry<String, JSONObject>> it = currentCloudProviderObj.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry<String, JSONObject> entry = (Map.Entry<String, JSONObject>)it.next(); //current entry in a loop
-			String providerName = (String) entry.getKey();
-			JSONObject providerObj = (JSONObject) entry.getValue();
-			
-			System.out.println("jjjjjjjjjj"+ providerName + "kkk\n" +  providerObj);
-		}
-		
-		/*
-		 * @SuppressWarnings("unchecked") Map.Entry<String, JSONObject> entry =
-		 * (HashMap.Entry<String, JSONObject>) currentCloudProviderObj .entrySet();
-		 * String providerName = entry.getKey(); JSONObject providerObj =
-		 * entry.getValue();
-		 */
-
-	}
+	public static void main(String... args) {}
 }
