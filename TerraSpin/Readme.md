@@ -9,6 +9,6 @@ to build cmd- mvn clean install
 
 After buliding maven will put jar in target folder of TerraSpin directory
 
-to run microservice cmd- java  -Dserver.port=8090 -jar TerraSpin.jar
+to run microservice cmd- java -Dspring.config.location=application.properties -jar TerraSpin.jar
 
 
