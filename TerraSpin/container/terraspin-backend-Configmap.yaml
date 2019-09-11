@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  application.properties: |
+    spring.banner.location=classpath:/templates/banner.txt
+    server.port=8090
+    application.iscontainer.env=true
+kind: ConfigMap
+metadata:
+  name: terraspinbackendconfig
+
+

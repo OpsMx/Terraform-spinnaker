@@ -16,35 +16,31 @@
 
 package com.opsmx.terraspin.util;
 
-import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 public class PropertiesUtil {
 
+	//private static final String CONFIG_FILE = "/home/opsmx/lalit/work/opsmx/Terraform-spinnaker/TerraSpin/container/application.properties"; 
+	private static final String CONFIG_FILE = "/home/terraspin/opsmx/app/config/application.properties"; 
 	private static Properties properties; // Singleton instance
-	
+	private PropertiesUtil() {}  // Dont instantiate a singleton class
+
 	public synchronized static Properties getInstance(){
-		if(properties == null){
-			properties = new Properties();
-			loadProps();
-		}
+		properties = new Properties();
+		loadProps();
 		return properties;
 	}
 
 	private static void loadProps() {
-		String propFile = System.getProperty("user.dir") + "/application.properties";
-		try{
-			@SuppressWarnings("unused")
-			InputStream inputStream = new ByteArrayInputStream(propFile.getBytes(StandardCharsets.UTF_8));
-		    FileInputStream file = new FileInputStream(propFile);
-			properties.load(file);
+		try(InputStream in = new FileInputStream(CONFIG_FILE);) {
+			properties.load(in);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
+
 	
 }

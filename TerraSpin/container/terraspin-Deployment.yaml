@@ -1,0 +1,45 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: opsmx-terraspin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opsmx-terraspin
+  template:
+    metadata:
+      labels:
+        app: opsmx-terraspin
+    spec:
+      volumes:
+        - name: opsmx-terraspin-backend-config
+          configMap:
+            name: terraspinbackendconfig
+        - name: opsmx-terraspin-hal-config
+          configMap:
+            name: terraspinhalconfig
+        - name: opsmx-terraspin-kube-config
+          configMap:
+            name: terraspinkubeconfig
+      containers:
+        - image: 'docker.io/opsmx11/terraspin:v1'
+          imagePullPolicy: Always
+          name: terraspin
+          ports:
+            - containerPort: 8090
+              name: backend
+              protocol: TCP
+          volumeMounts:
+          - name: opsmx-terraspin-backend-config
+            mountPath: /home/terraspin/opsmx/app/config/
+          - name: opsmx-terraspin-hal-config
+            mountPath: /home/terraspin/opsmx/hal/
+          - name: opsmx-terraspin-kube-config
+            mountPath: /home/terraspin/opsmx/kubeaccount/
+#         restartPolicy: Never
+
+
+
+
+

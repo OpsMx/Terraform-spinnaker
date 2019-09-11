@@ -19,9 +19,11 @@ package com.opsmx.terraspin.interfaces;
 import java.io.File;
 
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 
 public interface Provider {
 	
 	public void serviceProviderSetting(JSONObject cloudProvideObj, File currentTerraformInfraCodeDir);
+	
 
 }

@@ -20,12 +20,17 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
@@ -44,6 +49,14 @@ public class ApplicationStartup implements ApplicationListener<ContextRefreshedE
 	 */
 	private static final Logger log = LoggerFactory.getLogger(ApplicationStartup.class);
 	static final String separator = File.separator;
+	
+	@Value("${application.iscontainer.env}")
+	public boolean isContainer;
+	
+	public boolean isContainer() {
+		return isContainer;
+	}
+
 	@Override
 	public void onApplicationEvent(final ContextRefreshedEvent event) {
 		
@@ -84,53 +97,74 @@ public class ApplicationStartup implements ApplicationListener<ContextRefreshedE
 		tu.overWriteStreamOnFile(halConfigSource,
 				getClass().getClassLoader().getResourceAsStream(separator+"script"+separator+"exeHalConfig.sh"));
 		
-		HalConfigUtil.setHalConfig(halConfig(halConfigSource));
+		log.info("In hal config is container env: " + isContainer);
+		HalConfigUtil.setHalConfig(halConfig(halConfigSource, isContainer));
 		
 	}
 
 	@SuppressWarnings("unchecked")
-	public String halConfig(File file) {
+	public String halConfig(File file, boolean isContainerEnv) {
 		log.info("Hal config script path : " + file.getPath());
+		JSONParser parser = new JSONParser();
 		JSONObject halConfigRootObj = new JSONObject();
 		Process exec;
-		try {
-			exec = Runtime.getRuntime().exec(new String[] { "/bin/sh", "-c", "sh " + file.getPath() });
-			exec.waitFor();
-
-			BufferedReader reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
-			String line = "";
-			String tempLine = "";
-			while ((tempLine = reader.readLine()) != null) {
-				line = line + tempLine.trim() + System.lineSeparator();
+		if(isContainerEnv) {
+			
+			StringBuilder contentBuilder = new StringBuilder();
+		    try (Stream<String> stream = Files.lines( Paths.get("/home/terraspin/opsmx/hal/halconfig"), StandardCharsets.UTF_8))
+		    //try (Stream<String> stream = Files.lines( Paths.get("/home/opsmx/lalit/work/opsmx/Terraform-spinnaker/TerraSpin/container/halconfig"), StandardCharsets.UTF_8))
+		    {
+		        stream.forEach(s -> contentBuilder.append(s).append("\n"));
+		    }
+		    catch (IOException e)
+		    {
+		        e.printStackTrace();
+		    }
+		    try {
+				halConfigRootObj = (JSONObject) parser.parse(contentBuilder.toString());
+			} catch (ParseException e) {
+				e.printStackTrace();
 			}
+		}else {
+			try {
+				exec = Runtime.getRuntime().exec(new String[] { "/bin/sh", "-c", "sh " + file.getPath() });
+				exec.waitFor();
 
-			BufferedReader errorReader = new BufferedReader(new InputStreamReader(exec.getErrorStream()));
-			String line2 = "";
-			String tempLine2 = "";
-			while ((tempLine2 = errorReader.readLine()) != null) {
-				line2 = line2 + tempLine2.trim() + System.lineSeparator();
+				BufferedReader reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
+				String line = "";
+				String tempLine = "";
+				while ((tempLine = reader.readLine()) != null) {
+					line = line + tempLine.trim() + System.lineSeparator();
+				}
+
+				BufferedReader errorReader = new BufferedReader(new InputStreamReader(exec.getErrorStream()));
+				String line2 = "";
+				String tempLine2 = "";
+				while ((tempLine2 = errorReader.readLine()) != null) {
+					line2 = line2 + tempLine2.trim() + System.lineSeparator();
+				}
+
+				reader.close();
+				errorReader.close();
+
+				if (exec.exitValue() == 0) {
+					int startIndex = line.indexOf('{');
+					String halConfigString = line.substring(startIndex);
+					halConfigRootObj = (JSONObject) parser.parse(halConfigString);
+					log.info("Successfully parsed hal config ");
+
+				} else {
+					halConfigRootObj.put("error", line2);
+					log.info("Error while fetching hal config please make sure you hal daemaon is running");
+				}
+
+			} catch (IOException | InterruptedException | ParseException e) {
+				log.info("Malformed Hal config Error :"+e.getMessage()); 
+				throw new RuntimeException("Malformed Hal config data", e);
 			}
-
-			reader.close();
-			errorReader.close();
-
-			if (exec.exitValue() == 0) {
-				int startIndex = line.indexOf('{');
-				String halConfigString = line.substring(startIndex);
-				JSONParser parser = new JSONParser();
-				halConfigRootObj = (JSONObject) parser.parse(halConfigString);
-				log.info("Successfully parsed hal config ");
-
-			} else {
-				halConfigRootObj.put("error", line2);
-				log.info("Error while fetching hal config please make sure you hal daemaon is running");
-			}
-
-		} catch (IOException | InterruptedException | ParseException e) {
-			log.info("Malformed Hal config Error :"+e.getMessage()); 
-			throw new RuntimeException("Malformed Hal config data", e);
+			
 		}
-		
+		log.info("hal config Object :::  " + halConfigRootObj);
 		return halConfigRootObj.toJSONString();
 	}
 

@@ -474,11 +474,18 @@ public class TerraService {
 			}
 			String gitUser = (String) githubArtifactAccount.get("username");
 			String gittoken = (String) githubArtifactAccount.get("token");
-			// String gitPass = (String) githubArtifactAccount.get("password");
+			String gitPass = (String) githubArtifactAccount.get("password");
 			isGitModule = true;
+			
+			if(StringUtils.isNoneEmpty(gitPass)) {
+				terraformInfraCode = planConfig.replaceAll("GITUSER", gitUser).replaceAll("GITPASS", gitPass)
+						.replaceAll("GITPLANURL", gitPlanUrl);
+			}else {
+				terraformInfraCode = planConfig.replaceAll("GITUSER", gitUser).replaceAll("GITPASS", gittoken)
+						.replaceAll("GITPLANURL", gitPlanUrl);
+			}
+			
 
-			terraformInfraCode = planConfig.replaceAll("GITUSER", gitUser).replaceAll("GITPASS", gittoken)
-					.replaceAll("GITPLANURL", gitPlanUrl);
 		} else {
 			terraformInfraCode = spinPlan;
 		}
