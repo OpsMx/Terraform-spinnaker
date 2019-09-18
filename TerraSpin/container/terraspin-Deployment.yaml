@@ -23,7 +23,7 @@ spec:
           configMap:
             name: terraspinkubeconfig
       containers:
-        - image: 'docker.io/opsmx11/terraspin:v1'
+        - image: 'docker.io/opsmx11/terraspin:v0.9'
           imagePullPolicy: Always
           name: terraspin
           ports:
