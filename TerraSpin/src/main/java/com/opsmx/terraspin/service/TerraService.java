@@ -119,7 +119,7 @@ public class TerraService {
 		terraServicePlanSetting(halConfigObject, spinGitAccount, spinPlan, spincloudAccount, true,
 				currentTerraformInfraCodeDir);
 
-		TerraformPlanThread terraOperationCall = new TerraformPlanThread(currentTerraformInfraCodeDir);
+		TerraformPlanThread terraOperationCall = new TerraformPlanThread(currentTerraformInfraCodeDir,spinPlan);
 		Thread trigger = new Thread(terraOperationCall);
 		trigger.start();
 
@@ -457,7 +457,7 @@ public class TerraService {
 
 		if (StringUtils.isNoneEmpty(spinGitAccount)) {
 			String planConfig = new String(
-					"module \"terraModule\"{source = \"git::https://GITUSER:GITPASS@github.com/GITUSER/GITPLANURL\"}");
+					"module \"terraModule\"{source = \"git::https://GITPASS@github.com/GITUSER/GITPLANURL\"}");
 			// String gitPlanUrl = spinPlan.split("https://")[1];
 			String gitPlanUrl = spinPlan;
 			// JSONObject artifacts = (JSONObject) halConfigObject.get("artifacts");
@@ -469,7 +469,7 @@ public class TerraService {
 			for (int i = 0; i < githubArtifactAccounts.size(); i++) {
 				githubArtifactAccount = (JSONObject) githubArtifactAccounts.get(i);
 				String githubArtifactaccountName = (String) githubArtifactAccount.get("name");
-				if (StringUtils.equalsIgnoreCase(githubArtifactaccountName.trim(), spincloudAccount.trim()))
+				if (StringUtils.equalsIgnoreCase(githubArtifactaccountName.trim(), spinGitAccount.trim()))
 					break;
 			}
 			String gitUser = (String) githubArtifactAccount.get("username");
@@ -485,11 +485,11 @@ public class TerraService {
 						.replaceAll("GITPLANURL", gitPlanUrl);
 			}
 			
-
+        
 		} else {
 			terraformInfraCode = spinPlan;
 		}
-
+        log.info(" terrform infra module :"+terraformInfraCode);
 		String infraCodePath = currentTerraformInfraCodeDir.getPath() + "/infraCode.tf";
 		File infraCodfile = new File(infraCodePath);
 		if (!infraCodfile.exists()) {
