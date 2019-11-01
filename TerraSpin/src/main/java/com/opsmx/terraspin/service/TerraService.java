@@ -119,7 +119,7 @@ public class TerraService {
 		terraServicePlanSetting(halConfigObject, spinGitAccount, spinPlan, spincloudAccount, true,
 				currentTerraformInfraCodeDir);
 
-		TerraformPlanThread terraOperationCall = new TerraformPlanThread(currentTerraformInfraCodeDir,spinPlan);
+		TerraformPlanThread terraOperationCall = new TerraformPlanThread(currentTerraformInfraCodeDir);
 		Thread trigger = new Thread(terraOperationCall);
 		trigger.start();
 

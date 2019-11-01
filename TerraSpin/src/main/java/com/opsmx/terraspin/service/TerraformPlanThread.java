@@ -35,18 +35,15 @@ class TerraformPlanThread implements Runnable {
 
 	private static final Logger log = LoggerFactory.getLogger(TerraformPlanThread.class);
 	
-	private File file;
-	
-	private String terraformplan;
+	private File file;	
 	
 	public TerraformPlanThread() {
 		
 	}
 
-	public TerraformPlanThread(File file, String terraformplan) {
+	public TerraformPlanThread(File file) {
 
 		this.file = file;
-		this.terraformplan = terraformplan;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -54,14 +51,12 @@ class TerraformPlanThread implements Runnable {
 	public void run() {
 		String planScriptPath = System.getProperty("user.home") + "/.opsmx/script/exeTerraformPlan.sh";
 		log.info("terraform plan script path : "+planScriptPath);
-		TerraAppUtil terraAppUtil = new TerraAppUtil();
-	 	StringBuilder planDirectoryBuilder = new StringBuilder().append(".terraform/modules/");	
+		TerraAppUtil terraAppUtil = new TerraAppUtil();	 		
 		Process exec;
 		try {
 			exec = Runtime.getRuntime().exec(new String[] { "/bin/sh", "-c",
-					"printf 'yes' | sh " + planScriptPath + " " + file.getPath() + " " + planDirectoryBuilder.toString() });
+					"printf 'yes' | sh " + planScriptPath + " " + file.getPath() });
 			exec.waitFor();
-
 			BufferedReader reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
 			String line = "";
 			String tempLine = "";
@@ -107,15 +102,6 @@ class TerraformPlanThread implements Runnable {
 
 	public void setFile(File file) {
 		this.file = file;
-	}
-
-	public String getTerraformplan() {
-		return terraformplan;
-	}
-
-	public void setTerraformplan(String terraformplan) {
-		this.terraformplan = terraformplan;
-	}
-   
+	}   
 	
 }
