@@ -14,8 +14,8 @@ USER terraspin
 RUN mkdir -p /home/terraspin/opsmx/app /home/terraspin/opsmx/app/config /home/terraspin/opsmx/hal /home/terraspin/opsmx/kubeaccount
 RUN touch /home/terraspin/opsmx/app/terraspin.log && \
     chmod 777 /home/terraspin/opsmx/app/terraspin.log
-COPY /terraform  /usr/local/bin/terraform
-COPY /run.sh  /usr/local/bin/run.sh
+COPY /container/terraform  /usr/local/bin/terraform
 COPY /target/TerraSpin.jar  /home/terraspin/opsmx/app/TerraSpin.jar
+COPY /container/run.sh  /usr/local/bin/run.sh
 WORKDIR /home/terraspin
 CMD run.sh
