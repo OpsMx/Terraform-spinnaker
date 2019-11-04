@@ -5,7 +5,6 @@ COPY /container/terraform  /usr/local/bin/terraform
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y git
-COPY /run.sh  /usr/local/bin/run.sh
 RUN groupadd -g 999 terraspin && \
     useradd -r -u 999 -g terraspin terraspin
 RUN mkdir -p /home/terraspin
