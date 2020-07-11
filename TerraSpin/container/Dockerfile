@@ -1,10 +1,9 @@
 FROM opsmx11/java:ubuntu16_java8
-MAINTAINER OpsMx
+
 COPY TerraSpin/container/terraform  /usr/local/bin/terraform
 #COPY /git  /usr/bin/git
 RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y git
+    apt-get install -y --no-install-recommends git
 RUN groupadd -g 999 terraspin && \
     useradd -r -u 999 -g terraspin terraspin
 RUN mkdir -p /home/terraspin
